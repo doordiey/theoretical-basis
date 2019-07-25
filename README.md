@@ -9,5 +9,17 @@
 
 ### 参考资料：
 
-[编译原理 哈工大 ](<https://www.bilibili.com/video/av17649289/?p=1>)
+[编译原理 哈工大 陈鄞](<https://www.bilibili.com/video/av17649289/?p=1>)
 
+## emoji
+
+| emoji           | emoji代码 | commit说明                              |
+| --------------- | --------- | --------------------------------------- |
+| 调色板:art:     | ​art​       | 改进代码结构/代码格式【改进文件夹结构】 |
+| 闪电:zap:       | zap       | 提升性能【改进某个算法】                |
+| 火焰:fire:      | fire      | 移除代码或文件                          |
+| bug:bug:        | bug       | 修复bug【修改笔记错误处】               |
+| 火花:sparkles:  | sparkles  | 引入新功能【添加新的理论科目】          |
+| 大铅笔:pencil:  | pencil    | 撰写文档【更新章节大体内容】            |
+| 小铅​笔:pencil2: | pencil2   | 修复typo【补充章节内容】                |
+| 庆祝:tada:      | tada      | 初次提交【阶段内容完成】                |
