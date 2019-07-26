@@ -11,6 +11,12 @@
 
 [编译原理 哈工大 陈鄞](<https://www.bilibili.com/video/av17649289/?p=1>)
 
+## Database
+
+### 参考资料：
+
+[数据库原理及应用  东南大学 徐立臻 ](<https://www.bilibili.com/video/av14710005/?p=1>)
+
 ## emoji
 
 | emoji           | emoji代码 | commit说明                              |
@@ -23,3 +29,4 @@
 | 大铅笔:pencil:  | pencil    | 撰写文档【更新章节大体内容】            |
 | 小铅​笔:pencil2: | pencil2   | 修复typo【补充章节内容】                |
 | 庆祝:tada:      | tada      | 初次提交【阶段内容完成】                |
+
