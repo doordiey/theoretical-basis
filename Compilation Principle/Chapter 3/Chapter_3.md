@@ -111,7 +111,7 @@
 
 - DFA图
 
-![以abb结尾的ab字符串的DFA图]()
+![以abb结尾的ab字符串的DFA图](example/3-1.jpg)
 
 #### NFA 非确定的有穷自动机
 
@@ -135,7 +135,7 @@
 
 - NFA图
 
-![以abb结尾的ab字符串的NFA图]()
+![以abb结尾的ab字符串的NFA图](example/3-2.jpg)
 
 #### DFA和NFA的等价性
 
@@ -194,7 +194,7 @@
 
 ##### 例子  r = aa\*bb\*cc\*
 
-![例一 NFA图 ]()
+![例一 NFA图 ](example/3-3.jpg)
 
 - 对应转换表
 
@@ -205,13 +205,15 @@
 | C         | 空集  | 空集  | {C,D} |
 | D*(终态)  | 空集  | 空集  | 空集  |
 
-![例一对应的DFA图]()
+![例一对应的DFA图](example/3-4.jpg)
 
 ##### 带有空边的NFA到DFA的转换
 
 r = 0\*1\*2*
 
 NFA:
+
+![带有空边的NFA](example/3-5.jpg)
 
 转换表
 
@@ -222,6 +224,8 @@ NFA:
 | C*(终态)  | 空集    | 空集  | 空集 |
 
 DFA:
+
+![带有空边的DFA](example/3-6.jpg)
 
 #### 子集构造法
 
@@ -270,6 +274,8 @@ DFA:
 - digit --->0|1|2|……|9
 - letter_ ---> A|B|…|Z|a|b|…|z|_
 - id ---> letter\_(letter_|digit)*
+
+![对应的DFA](example/3-7.jpg))
 
 #### 整型或浮点型，无符号数的DFA
 
