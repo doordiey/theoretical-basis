@@ -76,19 +76,333 @@ WHERE   qualification
 
 ##### 范围变量
 
-- 即在FROM 内给表取别名，只要不会引起混淆，可以不加别名
+- 即在FROM 内给表取别名，只要不会引起混淆，可以不加别名【下面的写法相同】
+
+- 找出预定了船号为103的水手的姓名
+
+  - ```sql
+    SELECT S.sname  【最规范写法】
+    FROM Sailors S,Reserves R
+    WHERE S.sid = R.sid AND R.bid=103
+    ```
+
+  - ```sql
+    SELECT S.sname
+    FROM Sailors S,Reserves R
+    WHERE S.sid = R.sid AND bid =103
+    ```
+
+  - ```
+    SELECT sname
+    FROM Sailors,Reserves
+    WHERE Sailors.sid = Reserves.sid AND bid = 103
+    ```
 
 ##### 例子：
 
 - SELECT 不同时，慎重考虑是否要加DISTINCT
 
+  - 找出至少预定过一次船的水手
+
+  - ```sql
+    SELECT S.sid
+    FROM Sailors S,Reserves R
+    WHERE S.sid = R.sid
+    ```
+
+  - 比如：此例中若将sid 改为sname 那么加不加DISTINCT对结果的意义就有影响。
+
 - SELECT 子句中可以使用表达式
 
   - ```SQL
-    SELECT S.age,age1=S.age-5,2*S.age AS age2   //给结果命名的两种办法
+    SELECT S.age,age1=S.age-5,2*S.age AS age2   //给结果属性命名的两种办法【不一定两种方法都支持】
     FROM Sailors S
-    WHERE S.sname LIKE 'B_%B'   //模糊查询
+    WHERE S.sname LIKE 'B_%B'   //支持用like表达的模糊查询
     ```
+
+- 用集合的交和并方式进行查找
+
+  - 找出预定过一艘红船或者预定过一艘绿船的水手的编号
+
+  - ```sql
+    SELECT S.sid
+    FROM Sailors S,Boats B,Reserves R
+    WHERE S.sid =R.sid AND R.bid = B.bid AND(B.color='red' or B.color = 'green')
+    ```
+
+  - ```sql
+    SELECT S.sid
+    FROM Sailors S,Boats B,Reserves R
+    WHERE S.sid =R.sid AND R.bid = B.bid AND B.color='red'【所有预定红船的水手编号】
+    UNION
+    SELECT S.sid
+    FROM Sailors S,Boats B,Reserves R
+    WHERE S.sid =R.sid AND R.bid = B.bid AND B.color = 'green'【所有预定绿船的水手编号】
+    ```
+
+  - 更新问题为：预定过红船和绿船的水手的标号
+
+  - ```sql
+    SELECT S.sid
+    FROM Sailors S,Boats B1,Reserves R1,Boats B2,Reserves R2  【进行自连接】
+    WHERE S.sid = R1.sid AND R1.bid=B1.bid AND S.sid=R2.sid AND R2.bid=B2.bid
+    AND (B1.color='red' AND B2.color='green')
+    【自连接方法效率不高】
+    ```
+
+  - ```sql
+    SELECT S.sid
+    FROM Sailors S,Boats B,Reserves R
+    WHERE S.sid =R.sid AND R.bid = B.bid AND B.color='red'【所有预定红船的水手编号】
+    INTERSECT 【集合的交不是每个数据库都支持】 
+    SELECT S.sid
+    FROM Sailors S,Boats B,Reserves R
+    WHERE S.sid =R.sid AND R.bid = B.bid AND B.color = 'green'【所有预定绿船的水手编号】
+    【集合的交操作】
+    ```
+
+  - ```sql
+    SELECT S.sid 
+    FROM Sailors S,Boats B,Reserves R 
+    WHERE S.sid =R.sid AND R.bid = B.bid AND B.color = 'red' AND S.sid in ( SELECT S.sid 
+    FROM Sailors S,Boats B,Reserves R 
+    WHERE S.sid =R.sid AND R.bid = B.bid AND B.color = 'green' )
+    【嵌套查询的方法】
+    ```
+
+  - 
+
+- 嵌套查询
+
+  - 找出预定了103号船的水手姓名
+
+  - ```sql
+    SELECT S.sname
+    FROM Sailors S
+    WHERE S.sid IN(SELECT R.sid
+    	FROM Reserves R
+    	WHRER R.bid=103)
+    ```
+
+  - 该例子为非关联嵌套，子查询只执行一次
+
+  - ```sql
+    SELECT S.sname
+    FROM Sailors S
+    WHERE EXISTS (SELECT *
+    	FROM Reserves R
+    	WHRER R.bid=103 AND S.sid =R.sid)
+    ```
+
+  - 该查询为关联嵌套，子查询要做多次【相当于二层循环】
+
+  - 且只被一个水手预定过的船的编号：
+
+  - ```sql
+    SELECT  bid
+    FROM Reserves R1
+    WHERE bid NOT IN (
+    		SELECT bid
+    		FROM Reserves R2
+    		WHERE R2.sid != R1.sid)
+    ```
+
+- 查找出一个水手级别比任何一个叫Horatio的水手级别高的
+
+  - ```sql
+    SELECT * 
+    FROM Sailors S
+    WHERE S.rating > ANY(
+    	SELECT S2.rating
+    	FROM Sailors S2
+    	WHERE S2.sname = 'Horatio')
+    ```
+
+- 除法
+
+  - 找出预定了所有船的水手
+
+  - ```sql
+    SELECT S.sname
+    FROM Sailors S
+    WHERE NOT EXISTS
+    	((SELECT B.bid
+    	FROM Boats B)  【所有的船】
+    	EXCEPT   【减去】
+    	(SLELECT R.bid 
+    	FROM Reserves R
+    	WHERE R.sid =S.sid)【该水手订过的船】
+         【结果就是该水手没订过的船，若不存在，那么他就订过所有的船】
+    	) 
+    ```
+
+  - ```sql
+    SELECT S.sname
+    FROM Sailors S
+    WHERE NOT EXISTS(SELECT B.bid
+    			FROM Boats B
+    			WHERE NOT EXISTS(SELECT R.bid
+    			FROM Reserves R
+    			WHERE R.bid =B.bid
+    			AND R.sid = S.sid
+    			))
+    			【双重否定表肯定】
+    ```
+
+### SQL语言内的函数运算
+
+- COUNT* 
+  - 统计关系里面有多少元组
+- COUNT([DISTINCT]A)
+  - 统计关系属性A有多少个不同的值
+- SUM
+  - 求和
+- AVG 
+  - 求平均值
+- MAX
+  - 求最大值
+- MIN
+  - 求最小值
+
+#### 例子
+
+```sql
+SELECT COUNT *
+FROM Sailors S 
+【查找有多少个水手】
+```
+
+```sql
+SELECT COUNT(DISTINCT S.rating)
+FROM Sailors S
+WHERE S.sname ='Bob'
+【叫bob的有多少个级别】
+```
+
+##### 分组查询
+
+###### 结构
+
+- SELECT    target-list
+- FROM    relation-list
+- WHERE    qualification
+- GROUP BY   grouping-list【将筛选后得到的结果通过group by进行分组得到grouping-list】
+- HAVING    group-qualification 【对group by 得到的组进行筛选】
+
+###### 概念化执行步骤
+
+- 把 FROM子句中出现的表进行笛卡尔乘积，拼接起来
+- 用where子句的qualification进行筛选
+- 按照group-by将经过筛选后的元组进行分组
+- 用having子句对分组进行筛选
+- 将筛选后的组通过select子句进行运算，每一个组得到一个结果
+- 要求，select 子句和having子句中的属性必须是group by分组属性值的子集
+
+###### 例子
+
+- 求出年龄大于18岁的水手里每个级别最年轻的水手，且级别组人数有2个以上
+
+- ```sql
+  SELECT S.rating,MIN(S.age) AS minage
+  FROM Sailors S
+  WHERE S.age>=18
+  GROUP BY S.rating
+  HAVING COUNT(*) >1
+  ```
+
+- 查每一条红船的预定人数有多少
+
+- ```sql
+  SELECT B.bid,COUNT(*) AS scount
+  FROM Boats B,Reserves R
+  WHERE R.bid = B.bid AND B.color='red'
+  GROUP BY B.bid
+  ```
+
+- ```sql
+  SELECT B.bid,COUNT(*) AS scount
+  FROM Boats B,Reserves R
+  WHERE R.bid = B.bid 
+  GROUP BY B.bid
+  HAVING B.color='red'
+  【报错。此处的having属性的值不是group by的子集】
+  ```
+
+  
+
+- 找出年龄大于18的各个级别中的最小年龄，级别人数至少为两人（任意年龄）
+
+- ```sql
+  SELECT S.rating,MIN(S.age)
+  FROM Sailors S
+  WHERE S.age>18
+  GROUP BY S.rating
+  HAVING 1<(SELECT COUNT(*)
+  	FROM Sailors S2
+  	WHERE S2.rating=S.rating)
+  ```
+
+- 查找平均年龄最小的级别
+
+- ```sql
+  SELECT Temp.rating
+  FROM (SELECT S.rating,AVG(S.age)AS avgage
+  	FROM Sailors S
+  	GROUP BY S.rating)AS Temp
+  WHERE Temp.avgage = (SELECT MIN(Temp.avgage)
+  FROM Temp)
+  ```
+
+- FROM语句里面也可以嵌套查询
+
+#### 空值问题
+
+- 空值是不知道，是没有。
+
+- 需要一些特别的操作判断是否为空
+- 考虑空值与布尔表达式的影响
+- 需要三级逻辑（真、假、不知道）
+
+### 一些扩展
+
+#### CAST表达式
+
+- 类似于C、C++的强制类型转换
+- CAST + NULL(Expression)  AS  Data type
+
+##### 作用
+
+- 符合函数语法
+- 改变计算精度
+- 给空值赋予数据类型
+
+#### CASE表达式
+
+- 可以简单的做条件判断
+
+##### 用法
+
+- ```sql
+  CASE 
+  	WHEN type='chain saw' THEN accidents 
+  	ELSE 0e0
+  END
+  ```
+
+#### 子查询
+
+- 一个查询里面嵌套着查询就是子查询
+
+##### 类型
+
+- 标量子查询
+  - 查询结果就是单个的值
+- 表表达式
+  - 查询结果是一张表
+- 公共表表达式
+  - 在一些复杂的查询中，一个表表达式可能需要用到多次，
+
+
 
 
 
