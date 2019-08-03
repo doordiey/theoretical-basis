@@ -400,9 +400,229 @@ WHERE S.sname ='Bob'
 - 表表达式
   - 查询结果是一张表
 - 公共表表达式
-  - 在一些复杂的查询中，一个表表达式可能需要用到多次，
+  - 在一些复杂的查询中，一个表表达式可能需要用到多次，将它只定义一次，多次调用结果
 
+- - 用with子句可以定义公共表表达式【相当于是一个临时视图】
 
+  - 例子
+
+    - 找出哪个部门的工资最高
+
+    - ```sql
+      WITH payroll(deptno,totalpay) AS(SELECT deptno totalpay
+      	FROM emp
+      	GROUP BY deptno)
+      SELECT deptno
+      FROM payroll
+      WHERE totalpay=(SELECT max(totalpay)
+      	FROM payroll)
+      ```
+
+#### Outer Join 外连接
+
+- EXCEPT和EXCEPT ALL
+  - 都是做集合差，但EXCEPT ALL 不删重复元组，也就不用排序，效率比EXCEPT高
+- 用UNION ALL对多个SELECT结果并起来【这就是外连接】
+
+#### 递归查询
+
+- 在公共表表达式中用了自己的查询就是递归查询
+
+##### 例子：
+
+- ```sql
+  WITH agents(name,salary) AS
+  ((SELECT name,salary    【initial query】
+   FROM FedEmp
+   WHERE manager='Hoover')
+  UNION ALL
+  (SELECT f.name,f.salary   【recursive query】
+  FROM agents AS a,FedEmp AS f
+  WHERE f.manager=a.name))
+  SELECT name 【final query】        
+  ```
+
+- 飞机零件例子【有向无环图】
+
+- 飞机航班例子【有向有环图】
+
+  - 控制递归的结束条件
+
+### 数据操纵语言
+
+- DELETE
+
+  - 把表内满足条件的元组删除
+
+- UPDATE
+
+  - 把满足条件的元组的某些值进行更新
+
+- Insert
+
+  - 向表内插入元组
+
+  - 例子
+
+    - ```sql
+      Insert into employees values("smith")
+      ```
+
+### SQL中的视图
+
+##### 分类及相关介绍
+
+- 普通视图【虚表】
+  - 实现外模式
+  - 利用视图和逻辑模式的映射实现数据的逻辑独立性
+  - 数据库只存储视图的定义，不存储数据，数据在调用时临时计算，数据内容非永久保存
+  - 实现了数据库的安全性
+  - 对视图内数据的修改的问题
+- 临时视图【公共表表达式】
+  - 没有存储视图的定义
+  - 可以实现递归查询
+
+### 嵌入式SQL
+
+- 为了实现和程序设计语言结合，解决的问题
+  - 如何让程序设计语言接收SQL语言
+  - DBMS和应用程序如何交换数据和信息
+  - DBMS的查询结果是个集合，如何传递给程序设计语言中的变量
+  - DBMS支持的数据类型和应用程序支持的数据类型不是完全一样
+
+#### 解决方法
+
+- 嵌入式SQL
+- 编程的API
+- 封装的类
+
+##### 以C语言中的嵌入式SQL
+
+- 以ECEC SQL,开始，以；结尾会被预编译器识别为嵌入式SQL命令
+- 用宿主变量在DBMS和应用程序之间交换数据和消息
+- 在SQL命令里，可以用：的方法引用宿主变量的值
+- 宿主变量在C语言中就当一个普通的变量使用
+- 不可以把宿主变量定义为数组或结构
+- 一个特殊的宿主变量，通过SQLCA在C和DBMS进行数组交换
+- SQLCA.SQLCODE 可以判断查询结果
+- 用说明符来表示宿主变量的NULL
+
+###### 定义数组变量
+
+```c
+EXEC SQL BEGIN DECLARE SECTION;
+char SNO[7];
+char GIVENSNO[7];
+char CNO[6];
+char GIVENCNO[6];
+float GRADE;
+short GRADE1;
+EXEC SQL END DECLARE SECTION;
+```
+
+###### 执行命令的方式
+
+- 连接
+
+```c
+EXEC SQL CONNECT :uid IDENTIFIED BU:pws: ;
+```
+
+- 执行DML语句
+
+```c
+EXEC SQL INSERT INTO SC(SNO,CNO,GRADE)VALUES(SNO,:CNO,:GRADE);
+```
+
+- 查询【简单查询，返回一个值】
+
+```C
+EXEC SQL SELECT GRADE INTO :GRADE,:GRADE1
+FROM SC
+WHERE SNO=:GIVENSNO AND CNO=:GIVENCNO;
+```
+
+为了处理查询返回的集合，引入游标机制
+
+###### Cursor游标的操作步骤
+
+- 定义游标
+
+  - ```
+    EXEC SQL DECLARE 游标名 CURSOR FOR
+    SELECT
+    FROM 
+    WHERE
+    ```
+
+- 执行游标【可以理解为打开一个文件】
+
+  - ```c
+    EXEC SQL OPEN 游标名
+    ```
+
+- 取游标内每一条元组
+
+  - ```c
+    EXEC SQL FETCH 游标名
+    	INTO  :hostvar1,:hostvar2;
+    ```
+
+- 判断查询结果是否取完
+
+  - SQLCA.SQLCODE ==100 时取完
+
+- 关闭CURSOR
+
+  ```c
+  CLOSE CURSOR
+  ```
+
+#### 动态SQL
+
+上一个例子运用CURSOR的SQL语句是确定的，为了实现动态的SQL，
+
+- 可以直接运行的动态SQL【非查询】
+- 动态SQL的查询【带动态参数】
+- 动态构造查询语句
+
+##### 例子
+
+- 可以直接运行的动态SQL【非查询】
+
+  - 用字符数组动态拼接出一条sql语句
+
+  - ```c
+    EXEC SQL EXECUTE IMMEDIATE :sqlstring;
+    ```
+
+  - 让系统动态的及时执行sqlstring中的sql语句
+
+- 动态SQL的查询【带动态参数】
+
+  - 运用占位符
+
+  - ```c
+    EXEC SQL PREPARE PURGE FROM :sqlstring;【sql命令执行准备】
+    EXEC SQL EXECUTE PURGE USING:birth_yers;【将参数替换】
+    ```
+
+- 动态构造查询语句
+
+  - 用字符数组动态拼接出一条查询语句
+
+  - ```c
+    EXEC SQL PREPARE query FROM :sqlstring;   【先准备一下查询语句】
+    EXEC SQL DECLARE grade_cursor CURSOR FOR query; 【建立一个游标】
+    EXEC SQL OPEN grade_cursor USING :GIVENCNO; 【在此处替换占位符】
+    ```
+
+### 存储过程机制
+
+- 允许用户把一组常用的sql定义为一个存储过程，系统对其优化编译后可以被直接调用。
+  - 用户使用更加方便，应用需求发生变化时，只需要改变存储过程
+  - 改进性能
+  - 可以扩展DBMS的功能
 
 
 
