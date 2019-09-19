@@ -17,6 +17,12 @@
 
 [数据库原理及应用  东南大学 徐立臻 ](<https://www.bilibili.com/video/av14710005/?p=1>)
 
+## 计算机组成原理
+
+### 参考资料：
+
+[计算机组成原理 哈工大 刘宏伟](<https://www.bilibili.com/video/av15123338>)
+
 ## emoji
 
 | emoji           | emoji代码 | commit说明                              |
