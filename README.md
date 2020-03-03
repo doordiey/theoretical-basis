@@ -27,7 +27,7 @@
 
 ## 算法
 
-[算法导论 麻省理工](<<https://www.bilibili.com/video/av48922404?p=1>>)
+[算法导论 麻省理工](<https://www.bilibili.com/video/av48922404?p=1>)
 
 ## emoji
 
