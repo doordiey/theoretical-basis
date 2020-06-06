@@ -29,6 +29,12 @@
 
 [算法导论 麻省理工](<https://www.bilibili.com/video/av48922404?p=1>)
 
+## 数据挖掘
+
+[python数据分析与挖掘实战](https://pan.baidu.com/s/1hmYkhjYTdUWknopF0NFi4g)
+
+- pdf太大了，链接是网盘，密码是 gbsi
+
 ## emoji
 
 | emoji           | emoji代码 | commit说明                              |
